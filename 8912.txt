@@ -1,0 +1,60 @@
+처음 생각한 것:
+내 위치가 i면 i-1(i≥0일때) 의 값을 본다. 이 값이 나보다 작거나 같으면 A배열(나보다 작거나 같은 값의 개수를 저장하는 배열) 의 i-1 위치의 값을 가져와 +1해서 A[i]위치에 저장한다. 만약 나보다 크면, 더 왼쪽으로 가서 i-2위치에서 값을 비교하고 똑같이 한다. 이걸 반복하는 방법을 생각했다. 그러나 이 방법은 틀렸다.
+1 3 2 3일때 2의 값을 가져오면 2가 오기 때문에 답인 3과 다르게 된다.
+또한 T가 얼마나 크냐에 따라 엄청난 시간복잡도에 걸려서 시간초과가 날 수 있다.
+
+-관련 알고리즘: Fenwick Tree(BIT), 세그먼트 트리를 찾아보았다.
+BIT의 중요 구현 방법:
+idx -= idx & -idx;
+idx += idx & -idx;
+idx & -idx :: 가장 오른쪽에 있는 1비트의 위치를 구함.
+1001 → 1
+1010 → 2
+0011 → 1
+이것은 bit[i] 가 커버하는 구간의 크기를 의미한다.
+i=6 , i&-i = 2, 2칸을 커버함.
+이 알고리즘은 구간마다 건너뛰어서 저장하고 합을 구하는 구조임
+(GPT 도움)
+
+![이미지](./images/bit.jpg)
+
+커버하는 범위를 i에서 빼서 → idx -= idx & -idx;
+나머지 커버하는 범위를 구하는 방법.
+주요 동작은 update, query이다.
+update는 나의 값을 가진(예시:3) 배열에 전부 +a를 해주는 것이고, query는 빼면서 내가 가지지 않은 구간들을 더해주는 동작이다.
+```
+#include<stdio.h>
+#include<string.h>
+int A[5001];
+int bitQuery(int i){
+    int s=0;
+    while(i>0){
+        s+=A[i];
+        i-=i&-i;
+    }
+    return s;
+}
+
+void bitUpdate(int i, int x){
+    while(i<5001){
+        A[i]+=x;
+        i+=i&-i;
+    }
+}
+
+int main(){
+    int T,n,a;
+    scanf("%d",&T);
+    for(int i=0;i<T;i++){
+        scanf("%d",&n);
+        long long int s=0;
+        memset(A, 0, sizeof(A));
+        for(int j=0;j<n;j++){
+            scanf("%d",&a);
+            s+=bitQuery(a);
+            bitUpdate(a,1);
+        }
+        printf("%lld\n",s);
+    }
+}
+```
